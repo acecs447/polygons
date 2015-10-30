@@ -1,25 +1,29 @@
+
 <!doctype html>
 <html>
 <head>
-
-	<!-- Place this data between the <head> tags of your website -->
-	<title>Parable of the Polygons - a playable post on the shape of society</title>
-	<link rel="icon" type="image/png" href="favicon.png">
-
-	<!-- CSS -->
-	<link href="css/index.css" rel="stylesheet" type="text/css">
-
+	<title>Changes</title>
+	<link href="play/automatic/automatic.css" rel="stylesheet" type="text/css">
+	<style type="text/css">
+	a{
+		color: #888;
+	}
+	a:hover{
+		color: #bbb;
+	}
+	</style>
 </head>
 <body>
-
-
-	<!-- PLAYABLE -->
-	<div class="playable">
-		<iframe playable src="play/automatic/automatic_sandbox.html" style="position:relative;left:10px" width="1050" height="600"></iframe>
+	<iframe id="frame" src="play/automatic/automatic_sandbox.html"
+			style="position:relative;left:10px;display:block;margin:25px auto" width="1050" height="600"></iframe>
+	<div style="color:#fff; text-align:center;">
+		Modifications by The Garbage Collectors. <a href="https://github.com/ncase/polygons-pentagons">Original source from here.</a>
 	</div>
-
-
-<script src="js/mouse.js"></script>
-<script src="js/intro.js"></script>
-
+</body>
 </html>
+<script>
+window.onload = function(){
+	var frame = document.getElementById("frame");
+	frame.contentWindow.IS_IN_SIGHT = true;
+}
+</script>
