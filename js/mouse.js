@@ -1,15 +1,16 @@
 /*
-Handles detailed mouse events from the base onMouseMove/onTouchMove.
+Handles detailed mouse events. This is for document-level events.
 */
 (function(exports){
 
-	// Definition of mouse struct.
+	// Definition of mouse singleton.
 	// Contains position vector and a LMB-down boolean.
 	var Mouse = {
 		x: 0,
 		y: 0,
 		pressed: false
 	};
+	//Make it accessible outside of this script.
 	exports.Mouse = Mouse;
 	
 	// Events!
@@ -37,7 +38,7 @@ Handles detailed mouse events from the base onMouseMove/onTouchMove.
 	},false);
 
 	//Touch start event.
-	//If triggered, LMB must be pressed.
+	//If triggered, LMB must be pressed. Pass through to onTouchMove.
 	document.body.addEventListener("touchstart",function(event){
 	    Mouse.pressed = true;
 	    onTouchMove(event);
