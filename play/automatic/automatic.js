@@ -1,36 +1,47 @@
+//Contains ALL of the world simulation and drawing code.
+//Main canvas for world simulation and UI.
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 
+//Canvas for statistics.
+//Presumably this is where you draw the segregation graph.
 var stats_canvas = document.getElementById("stats_canvas");
 var stats_ctx = stats_canvas.getContext("2d");
 
-var NONCONFORM = 1.00;
-var BIAS = 0.33;
-var TILE_SIZE = 30;
-var PEEP_SIZE = 30;
-var GRID_SIZE = 20;
+//Grid and polygon behavior constants.
+var NONCONFORM = 1.00;	//The amount of NONconformity a polygon wants.
+var BIAS = 0.33;	//The amount of conformity a polygon wants.
+var TILE_SIZE = 30;	//The size of a tile, in (TODO: pixels?).
+var PEEP_SIZE = 30;	//TODO: The size of a ???, in pixels.
+var GRID_SIZE = 20;	//The leg length of the grid, in (TODO: number of tiles?).
 var DIAGONAL_SQUARED = (TILE_SIZE+5)*(TILE_SIZE+5) + (TILE_SIZE+5)*(TILE_SIZE+5);
 
-
-
+//UI default parameters.
 window.RATIO_TRIANGLES = 0.25;
 window.RATIO_SQUARES = 0.25;
 window.RATIO_PENTAGONS = 0.25;
 window.EMPTINESS = 0.25;
 
-
+//Loader for images.
 var assetsLeft = 0;
 var onImageLoaded = function(){
 	assetsLeft--;
 };
 
+//The actual image list.
 var images = {};
+//Requests an image be loaded.
 function addAsset(name,src){
+	//Note that an asset hasn't finished loaded.
 	assetsLeft++;
 	images[name] = new Image();
+	//Set the image's callback to tick down the assetsLeft
+	//counter once loaded.
 	images[name].onload = onImageLoaded;
+	//Actually load the image.
 	images[name].src = src;
 }
+//Load polygon images.
 addAsset("yayTriangle","../img/yay_triangle.png");
 addAsset("mehTriangle","../img/meh_triangle.png");
 addAsset("sadTriangle","../img/sad_triangle.png");
@@ -41,9 +52,11 @@ addAsset("yayPentagon","../img/yay_pentagon.png");
 addAsset("mehPentagon","../img/meh_pentagon.png");
 addAsset("sadPentagon","../img/sad_pentagon.png");
 
+//Mouse state.
 var IS_PICKING_UP = false;
 var lastMouseX, lastMouseY;
 
+//TODO
 function Draggable(x,y){
 	
 	var self = this;
@@ -232,13 +245,17 @@ function Draggable(x,y){
 	};
 
 }
-
+//If true, the simulator should be running.
 window.START_SIM = false;
 
+//A list of polygons in the world.
 var draggables;
+//Container for statistics.
 var STATS;
+//Entry point for the window.
+//Initializes grid and statistics, as well as their canvases.
 window.reset = function(){
-
+	//TODO
 	STATS = {
 		steps:0,
 		offset:0
@@ -495,6 +512,7 @@ window.requestAnimFrame = window.requestAnimationFrame ||
 
 window.IS_IN_SIGHT = false;
 
+//Now set up the window!
 window.onload=function(){
 	reset();
 }
