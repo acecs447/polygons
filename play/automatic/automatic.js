@@ -30,7 +30,9 @@ var onImageLoaded = function(){
 
 //The actual image list.
 var images = {};
-//Requests an image be loaded.
+/**
+Requests an image be loaded.
+*/
 function addAsset(name,src){
 	//Note that an asset hasn't finished loaded.
 	assetsLeft++;
@@ -56,7 +58,9 @@ addAsset("sadPentagon","../img/sad_pentagon.png");
 var IS_PICKING_UP = false;
 var lastMouseX, lastMouseY;
 
-//TODO
+/**
+TODO
+*/
 function Draggable(x,y){
 	
 	var self = this;
@@ -252,8 +256,10 @@ window.START_SIM = false;
 var draggables;
 //Container for statistics.
 var STATS;
-//Entry point for the window.
-//Initializes grid and statistics, as well as their canvases.
+/**
+Entry point for the window.
+Initializes grid and statistics, as well as their canvases.
+*/
 window.reset = function(){
 	//TODO
 	STATS = {
@@ -264,9 +270,11 @@ window.reset = function(){
 
 	stats_ctx.clearRect(0,0,stats_canvas.width,stats_canvas.height);
 
+	//Initialize the grid.
 	draggables = [];
 	for(var x=0;x<GRID_SIZE;x++){
 		for(var y=0;y<GRID_SIZE;y++){
+			//Randomly fill (or don't fill) this cell according to the slider proportions.
             var rand = Math.random();
 			if(rand<(1-window.EMPTINESS)){
 				var draggable = new Draggable((x+0.5)*TILE_SIZE, (y+0.5)*TILE_SIZE);
@@ -277,48 +285,67 @@ window.reset = function(){
                 }else{
                     draggable.color = "pentagon";
                 }
+				//Actually put the new polygon in the draggable list.
 				draggables.push(draggable);
 			}
 		}
 	}
 
-	// Write stats for first time
+	//Prime the statistics.
 	for(var i=0;i<draggables.length;i++){
+		//Update each polygon's satisfaction state.
 		draggables[i].update();
 	}
+	//Write out this iteration's stats!
 	writeStats();
 
 }
 
+/**
+Render callback for window.
+*/
 window.render = function(){
 
-	if(assetsLeft>0 || !draggables) return;
+	//Early out if we haven't loaded all images
+	//or don't have any draggables to update;
+	//everything else is static for our purposes.
+	if(assetsLeft>0 || !draggables)
+	{
+		return;
+	}
 	
-	// Is Stepping?
+	//Update the sim if we're supposed to be running.
 	if(START_SIM){
 		step();
 	}
 
-	// Draw
+	//Update the mouse cursor.
 	Mouse.isOverDraggable = IS_PICKING_UP;
 	ctx.clearRect(0,0,canvas.width,canvas.height);
 	for(var i=0;i<draggables.length;i++){
 		var d = draggables[i];
+		//Update each polygon's satisfaction...
 		d.update();
 
+		//...because you can only pick up a polygon if it's unhappy
+		//and the window allows moving polygons.
 		if(d.shaking || window.PICK_UP_ANYONE){
 			var dx = Mouse.x-d.x;
 			var dy = Mouse.y-d.y;
+			//Check if we're close enough to this polygon to count as
+			//being "over" it.
 			if(Math.abs(dx)<PEEP_SIZE/2 && Math.abs(dy)<PEEP_SIZE/2){
 				Mouse.isOverDraggable = true;
 			}
 		}
 
 	}
+	//Animate the polygons as needed.
 	for(var i=0;i<draggables.length;i++){
 		draggables[i].draw();
 	}
 
+	//TODO
 	// Done stepping?
 	if(isDone()){
 		doneBuffer--;
@@ -350,6 +377,8 @@ window.render = function(){
 	lastMouseY = Mouse.y;
 
 }
+
+//Get the tags for various text elements?
 var segregation_text = document.getElementById("segregation_text");
 if(!segregation_text){
     var segregation_text = document.getElementById("stats_text");
@@ -357,17 +386,26 @@ if(!segregation_text){
 var shaking_text = document.getElementById("sad_text");
 var bored_text = document.getElementById("meh_text");
 
+//Create a temporary stats canvas that we modify,
+//then copy to the destination.
 var tmp_stats = document.createElement("canvas");
 tmp_stats.width = stats_canvas.width;
 tmp_stats.height = stats_canvas.height;
 
+/**
+Callback to write out stats to the segregation graph.
+*/
 window.writeStats = function(){
+	//Early abort if there's no draggables to check.
+	if(!draggables || draggables.length==0)
+	{
+		return;
+	}
 
-	if(!draggables || draggables.length==0) return;
-
-	// Average Sameness Ratio
-	// Average shaking 
-	// Average bored 
+	// Calculate the following averages (mean):
+	//	* Sameness Ratio
+	//	* Number Shaking (unhappy)
+	//	* Number Bored
 	var total = 0;
     var total_shake = 0;
     var total_bored = 0;
@@ -380,8 +418,14 @@ window.writeStats = function(){
 	var avg = total/draggables.length;
 	var avg_shake = total_shake/draggables.length;
 	var avg_bored = total_bored/draggables.length;
-	if(isNaN(avg)) debugger;
+	//Assert here if we're dividing by zero;
+	//that should've been covered by the sanity check.
+	if(isNaN(avg))
+	{
+		debugger;
+	}
 
+	//TODO
 	// If stats oversteps, bump back
 	if(STATS.steps>320+STATS.offset){
 		STATS.offset += 120;
@@ -447,9 +491,12 @@ function isDone(){
 	return true;
 }
 
+/**
+ Simulates one iteration of the world.
+*/
 function step(){
 
-	// Get all shakers
+	// Get all unhappy polygons.
 	var shaking = [];
 	for(var i=0;i<draggables.length;i++){
 		var d = draggables[i];
