@@ -1,6 +1,6 @@
 body{
 	margin:0;
-	overflow: hidden;
+/*	overflow: hidden;*/
 	background: #222;
 
 	font-family: sans-serif;
@@ -21,8 +21,10 @@ div{
 }
 #container{
 	position: relative;
+/*    add to width here must add to width in index.html as well - Nisarga 11/17/2015*/
 	width:1030px;
-	height:600px;
+/*    add to height here must add to height in index.html as well - Nisarga 11/17/2015*/
+    height: 800px;
 }
 #canvas{
 	display: block;

@@ -395,6 +395,11 @@ tmp_stats.height = stats_canvas.height;
 /**
 Callback to write out stats to the segregation graph.
 */
+// stats global variable updated on each writeStats
+var aceStats;
+var sum_avg_shake = 0;
+var sum_avg_bored = 0;
+
 window.writeStats = function(){
 	//Early abort if there's no draggables to check.
 	if(!draggables || draggables.length==0)
@@ -418,6 +423,10 @@ window.writeStats = function(){
 	var avg = total/draggables.length;
 	var avg_shake = total_shake/draggables.length;
 	var avg_bored = total_bored/draggables.length;
+    
+    sum_avg_shake += avg_shake;
+    sum_avg_bored += avg_bored;
+    
 	//Assert here if we're dividing by zero;
 	//that should've been covered by the sanity check.
 	if(isNaN(avg))
@@ -477,6 +486,11 @@ window.writeStats = function(){
 	}else{
 		document.getElementById("moving").classList.remove("moving");
 	}
+    
+    // create statistic values to be returned - Nisarga 11/17/2015
+    aceStats = {'segregation': segregation,
+                 'sum_avg_shake' : sum_avg_shake,
+                 'sum_avg_bored' : sum_avg_bored}
 
 }
 
@@ -488,6 +502,27 @@ function isDone(){
 		var d = draggables[i];
 		if(d.shaking) return false;
 	}
+    
+    // Nisarga Patel Changes 11/17/2015
+    
+    // aceStatBox refers to the added html element in automatic_sandbox.html
+    var aceStatBox = document.getElementById('stat_values');
+    
+    // aceHtmlString is the string that will hold the statistics html code
+    var aceHtmlString = "";
+    
+    // adding segregation values to the html string
+    aceHtmlString += "<h4>Segregation: " + aceStats['segregation'].toFixed(2) + "</h4>";
+    
+    // adding the sum of the average shake across each change to the html string
+    aceHtmlString += "<h4>Sum of Average Shake: " + aceStats['sum_avg_shake'].toFixed(2) + "</h4>";
+    
+    // adding the sum of the average bored across each change to the html string
+    aceHtmlString += "<h4>Sum of Average Bored: " + aceStats['sum_avg_bored'].toFixed(2) + "</h4>";
+    
+    // set the html element's innerHtml to the aceHtmlString plus a line break
+    aceStatBox.innerHTML = aceHtmlString + "<br>";
+    
 	return true;
 }
 

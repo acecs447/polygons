@@ -21,7 +21,14 @@
 				<div id="sad_text"></div>
 				<div id="meh_text"></div>
 			</div>
-
+            <!--      Statistics will show here     -->
+            <div id="statistics">
+                <h1>Statistics</h1>
+                <!-- this div will be referenced by the javascript
+                and be populated with statistical values  -->
+                <div id="stat_values">
+                </div>
+            </div>
 			i'll move if <span class="highlight">&lt;<span id="bias_text">33%</span></span> 
 			or <span class="highlight">&gt;<span id="nonconform_text">100%</span></span> of my neighbors are like me
 			<br>
@@ -55,6 +62,10 @@ window.PICK_UP_ANYONE = true;
 
 var bias_text = document.getElementById("bias_text");
 var nonconform_text = document.getElementById("nonconform_text");
+
+// added this box to populate with statistics
+var stat_box = document.getElementById('stat_values');
+stat_box.innerHTML = "Run simulation to generate statistics <br><br>";
 
 var whatever = new DoubleSlider(document.getElementById("slider"),{
 	backgrounds:[
