@@ -496,10 +496,10 @@ window.writeStats = function(){
 	}
     
     // create statistic values to be returned - Nisarga 11/17/2015
-    aceStats = {'segregation': segregation,
+    aceStats = {'segregation': segregation * 100,
                  'sum_avg_shake' : sum_avg_shake,
                  'sum_avg_bored' : sum_avg_bored,
-                 'max_segregation' : max_segregation};
+                 'max_segregation' : max_segregation * 100};
 
 }
 
@@ -513,7 +513,7 @@ function updateStats(){
     var aceHtmlString = "";
     
     // adding segregation values to the html string
-    aceHtmlString += "<h4>Segregation: " + aceStats['segregation'].toFixed(2) + "</h4>";
+    aceHtmlString += "<h4>Segregation: " + aceStats['segregation'].toFixed(2) + "%</h4>";
     
     // adding the sum of the average shake across each change to the html string
     aceHtmlString += "<h4>Sum of Average Shake: " + aceStats['sum_avg_shake'].toFixed(2) + "</h4>";
@@ -522,7 +522,7 @@ function updateStats(){
     aceHtmlString += "<h4>Sum of Average Bored: " + aceStats['sum_avg_bored'].toFixed(2) + "</h4>";
     
     aceHtmlString += "<h4>Max Segregation: " + 
-        aceStats['max_segregation'].toFixed(2) + "</h4>";
+        aceStats['max_segregation'].toFixed(2) + "%</h4>";
     // set the html element's innerHtml to the aceHtmlString plus a line break
     aceStatBox.innerHTML = aceHtmlString + "<br>";
     
