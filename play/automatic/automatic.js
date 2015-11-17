@@ -399,6 +399,7 @@ Callback to write out stats to the segregation graph.
 var aceStats;
 var sum_avg_shake = 0;
 var sum_avg_bored = 0;
+var max_segregation = 0;
 
 window.writeStats = function(){
 	//Early abort if there's no draggables to check.
@@ -449,7 +450,14 @@ window.writeStats = function(){
 	var segregation = (avg-0.5)*2;
 	var segregation = avg;
 	if(segregation<0) segregation=0;
-
+    
+    // Nisarga Patel 11/17/2015
+    // setting max segregation
+    if(segregation > max_segregation){
+        
+        max_segregation = segregation;
+        
+    }
 	// Graph it
 	stats_ctx.fillStyle = "#cc2727";
 	var x = STATS.steps - STATS.offset;
@@ -490,19 +498,12 @@ window.writeStats = function(){
     // create statistic values to be returned - Nisarga 11/17/2015
     aceStats = {'segregation': segregation,
                  'sum_avg_shake' : sum_avg_shake,
-                 'sum_avg_bored' : sum_avg_bored}
+                 'sum_avg_bored' : sum_avg_bored,
+                 'max_segregation' : max_segregation};
 
 }
 
-var doneAnimFrame = 0;
-var doneBuffer = 30;
-function isDone(){
-	if(Mouse.pressed) return false;
-	for(var i=0;i<draggables.length;i++){
-		var d = draggables[i];
-		if(d.shaking) return false;
-	}
-    
+function updateStats(){
     // Nisarga Patel Changes 11/17/2015
     
     // aceStatBox refers to the added html element in automatic_sandbox.html
@@ -520,8 +521,22 @@ function isDone(){
     // adding the sum of the average bored across each change to the html string
     aceHtmlString += "<h4>Sum of Average Bored: " + aceStats['sum_avg_bored'].toFixed(2) + "</h4>";
     
+    aceHtmlString += "<h4>Max Segregation: " + 
+        aceStats['max_segregation'].toFixed(2) + "</h4>";
     // set the html element's innerHtml to the aceHtmlString plus a line break
     aceStatBox.innerHTML = aceHtmlString + "<br>";
+    
+}
+var doneAnimFrame = 0;
+var doneBuffer = 30;
+function isDone(){
+	if(Mouse.pressed) return false;
+	for(var i=0;i<draggables.length;i++){
+		var d = draggables[i];
+		if(d.shaking) return false;
+	}
+    
+    updateStats();
     
 	return true;
 }
@@ -589,6 +604,7 @@ window.requestAnimFrame = window.requestAnimationFrame ||
 	requestAnimFrame(animloop);
 	if(window.IS_IN_SIGHT){
 		render();
+        //updateStats();
 	}
 })();
 
