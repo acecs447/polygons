@@ -478,7 +478,7 @@ window.writeStats = function(){
 	stats_ctx.fillRect(x,y,1,5);
 	// Text
     if(shaking_text){
-        shaking_text.innerHTML = Math.floor(avg_shake*100)+"%" + " happy";
+        shaking_text.innerHTML = Math.floor(avg_shake*100)+"%" + " unhappy";
         shaking_text.style.top = Math.round(y-15)+"px";
         shaking_text.style.left = Math.round(x+35)+"px";
     }
