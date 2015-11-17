@@ -464,7 +464,7 @@ window.writeStats = function(){
 	var y = 250 - segregation*250+10;
 	stats_ctx.fillRect(x,y,1,5);
 	// Text
-	segregation_text.innerHTML = Math.floor(segregation*100)+"%";
+	segregation_text.innerHTML = Math.floor(segregation*100)+"%" + " segregation";
 	segregation_text.style.top = Math.round(y-15)+"px";
 	segregation_text.style.left = Math.round(x+35)+"px";
 
@@ -473,7 +473,7 @@ window.writeStats = function(){
 	stats_ctx.fillRect(x,y,1,5);
 	// Text
     if(shaking_text){
-        shaking_text.innerHTML = Math.floor(avg_shake*100)+"%";
+        shaking_text.innerHTML = Math.floor(avg_shake*100)+"%" + " happy";
         shaking_text.style.top = Math.round(y-15)+"px";
         shaking_text.style.left = Math.round(x+35)+"px";
     }
@@ -483,7 +483,7 @@ window.writeStats = function(){
 	stats_ctx.fillRect(x,y,1,5);
 	// Text
     if(bored_text){
-	bored_text.innerHTML = Math.floor(avg_bored*100)+"%";
+	bored_text.innerHTML = Math.floor(avg_bored*100)+"%" + " bored";
 	bored_text.style.top = Math.round(y-15)+"px";
 	bored_text.style.left = Math.round(x+35)+"px";
     }
