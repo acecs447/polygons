@@ -604,7 +604,6 @@ window.requestAnimFrame = window.requestAnimationFrame ||
 	requestAnimFrame(animloop);
 	if(window.IS_IN_SIGHT){
 		render();
-        //updateStats();
 	}
 })();
 

@@ -14,7 +14,7 @@
 	<div id="container">
 		<canvas id="canvas" width="600" height="600"></canvas>
 		<div id="stats">
-
+            
 			<div id="stats_canvas_container">
 				<canvas id="stats_canvas" width="370" height="270"></canvas>
 				<div id="segregation_text"></div>
@@ -102,6 +102,12 @@ var whatever = new NSlider(document.getElementById("slider2"),{
 		var VALUE_1 = values[0];
 		var VALUE_2 = values[1];
 		var VALUE_3 = values[2];
+        if(VALUE_3 > 1){
+            values[2] = 0.75;
+            VALUE_3 = 0.75;
+            alert("Bound reached");
+            document.querySelector("#slider2 > div:nth-child(7)").style = "background: #000;";
+        }
 		window.EMPTINESS = 1-VALUE_3;
 		window.RATIO_TRIANGLES = VALUE_1;
 		window.RATIO_SQUARES = (VALUE_2-VALUE_1);

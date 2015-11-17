@@ -64,20 +64,27 @@ function NSlider(dom,config){
 	    	var val = x/400;
 
 	    	var index = self.draggingSliderIndex;
+            // Debug statement: console.log("Current slider is: " + index);
 	    	var sliderWidth = 0;//0.025;
             var edge_l = 0;
             var edge_h = 1;
+            
+            // Nisarga Patel 11/17/2015 Fixed Slider bug
+            // the problem was it should be self.sliderCount -2
+            // the original code had self.sliderCount - 1
 	    	if(index==0){
 	    		edge_l = sliderWidth/2;
 	    		edge_h = self.values[index+1]-sliderWidth;
-	    	}else if(index==(self.sliderCount-1)){
+                console.log(edge_h);
+	    	}else if(index==(self.sliderCount-2)){
 	    		edge_l = self.values[index-1]+sliderWidth;
-	    		edge_h = 1-sliderWidth/2;
+	    		edge_h = 1;
 	    	}else{
 	    		edge_l = self.values[index-1]+sliderWidth;
 	    		edge_h = self.values[index+1]-sliderWidth;
+                console.log(edge_h);
             }
-            if(val>edge_h){
+            if(val >= edge_h){
                val=edge_h;
             }else if(val<edge_l){
                 val=edge_l;
