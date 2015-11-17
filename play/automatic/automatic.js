@@ -417,6 +417,11 @@ window.writeStats = function(){
     var total_bored = 0;
 	for(var i=0;i<draggables.length;i++){
 		var d = draggables[i];
+        
+        // Nisarga 11/17/2015
+        // Debug: console.log(JSON.stringify(d));
+        // Each draggable has these properties: color, shaking, bored, sameness
+        
 		total += d.sameness || 0;
         total_shake += (d.shaking?1:0);
         total_bored += (d.bored?1:0);
