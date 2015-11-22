@@ -22,6 +22,9 @@ window.RATIO_SQUARES = 0.25;
 window.RATIO_PENTAGONS = 0.25;
 window.EMPTINESS = 0.25;
 
+//Initialize Parse
+Parse.initialize("kFx7BGPyohCH77X74mgK3FFtuDbuZNfrVfNxIJEK", "w52hrsYOBvXd5v1r0Gxk6qm5xjxP1XAnJCgWyOpx");
+
 //Loader for images.
 var assetsLeft = 0;
 var onImageLoaded = function(){
@@ -354,6 +357,7 @@ window.render = function(){
 			START_SIM = false;
 			console.log("DONE");
 			writeStats();
+			parse();
 		}
 	}else if(START_SIM){
 		
@@ -542,8 +546,29 @@ function isDone(){
 	}
     
     updateStats();
-    
+
 	return true;
+}
+
+/*
+ Stores statistical data in the Parse backend.
+*/
+function parse(){
+    var StatData = Parse.Object.extend("StatData");
+    var statData = new StatData();
+    statData.save({
+		segregation: aceStats['segregation'],
+		sumAvgShake: aceStats['sum_avg_shake'],
+		sumAvgBored: aceStats['sum_avg_bored'],
+		maxSegregation: aceStats['max_segregation']
+	}, {
+		success: function(object) {
+        	//$(".success").show();
+		},
+		error: function(model, error) {
+			//$(".error").show();
+		}
+    });
 }
 
 /**
