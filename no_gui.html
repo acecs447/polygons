@@ -1,0 +1,31 @@
+
+<!doctype html>
+<html>
+<head>
+	<title>Ace Software</title>
+<!--	<link href="play/automatic/automatic.css" rel="stylesheet" type="text/css">-->
+	<style type="text/css">
+	a{
+		color: #888;
+	}
+	a:hover{
+		color: #bbb;
+	}
+	</style>
+</head>
+<body>
+    <h1>Ace Software Less GUI Mode</h1>
+    <a href="index.html">GUI Mode</a>
+	<iframe id="frame" src="play/automatic/no_gui.html"
+			style="width: 1030px; height:800px;position:relative;left:10px; border: 0px;display:block;"></iframe>
+	<div style="color:#fff; text-align:center;">
+		<a href="https://github.com/ncase/polygons-pentagons">Original source from here.</a>
+	</div>
+</body>
+</html>
+<script>
+window.onload = function(){
+	var frame = document.getElementById("frame");
+	frame.contentWindow.IS_IN_SIGHT = true;
+}
+</script>

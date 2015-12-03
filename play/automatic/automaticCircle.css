@@ -1,0 +1,106 @@
+body{
+  margin:0;
+/*  overflow: hidden;*/
+  background: #222;
+
+  font-family: sans-serif;
+  font-size: 1.5em;
+  font-weight: 100;
+
+  color:#ddd;
+}
+iframe{
+  border: none;
+}
+div{
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;    
+}
+#container{
+  position: relative;
+/*    add to width here must add to width in index.html as well - Nisarga 11/17/2015*/
+  width:1030px;
+/*    add to height here must add to height in index.html as well - Nisarga 11/17/2015*/
+    height: 800px;
+}
+#canvas{
+  display: block;
+  float:left;
+  -moz-border-radius: 350px/350px;
+    -webkit-border-radius: 350px 350px;
+    border-radius: 350px/350px;
+}
+#stats{
+  width:400px; height:100%;
+  float:left;
+  margin-left: 20px;
+  font-size: 16px;
+  text-align: center;
+}
+#segregation_text{
+  position: absolute;
+  color:#cc2727;
+  font-size: 20px;
+}
+#sad_text{
+  position: absolute;
+  color:#2727cc;
+  font-size: 20px;
+}
+#meh_text{
+  position: absolute;
+  color:#cccc27;
+  font-size: 20px;
+}
+#stats_canvas_container{
+  background:url(../img/stats.png);
+  width:400px; height:300px;
+  position:relative; overflow:hidden;
+  margin-bottom: 20px;
+}
+#stats_canvas{
+  position: absolute;
+  top:-1px;
+  right:-1px;
+}
+
+.ui{
+  background: url(../img/ui_buttons.png);
+  width:195px;
+  height:52px;
+
+  cursor: pointer;
+  float:left;
+
+  position: relative;
+  top:0px;
+
+  -webkit-transition: top 0.1s linear;
+    -moz-transition: top 0.1s linear;
+    -ms-transition: top 0.1s linear;
+    -o-transition: top 0.1s linear;
+    transition: top 0.1s linear;
+
+}
+.ui:hover{
+  top:-5px;
+}
+.ui:active{
+  top:3px;
+}
+
+#reset{ background-position: 0 -104px; }
+#reset:hover{ background-position: 0 -156px; }
+
+#moving{ background-position: 0 -208px; }
+#moving:hover{ background-position: 0 -260px; }
+
+#moving.moving{ background-position: 0 -312px; }
+#moving.moving:hover{ background-position: 0 -364px; }
+
+span.highlight{
+  color:#cc2727;
+}
