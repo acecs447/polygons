@@ -11,10 +11,10 @@ var stats_ctx = stats_canvas.getContext("2d");
 //Grid and polygon behavior constants.
 var NONCONFORM = 1.00;	//The amount of NONconformity a polygon wants.
 var BIAS = 0.33;	//The amount of conformity a polygon wants.
-var TILE_SIZE = 30;	//The size of a tile, in (TODO: pixels?).
-var PEEP_SIZE = 30;	//TODO: The size of a ???, in pixels.
-var GRID_SIZE = 20;	//The leg length of the grid, in (TODO: number of tiles?).
-var DIAGONAL_SQUARED = (TILE_SIZE+5)*(TILE_SIZE+5) + (TILE_SIZE+5)*(TILE_SIZE+5);
+var TILE_SIZE = 30;	//The size of a tile.
+var PEEP_SIZE = 30;	//The approximate search radius to use when looking for things near the mouse.
+var GRID_SIZE = 20;	//The leg length of the grid.
+var DIAGONAL_SQUARED = (TILE_SIZE+5)*(TILE_SIZE+5) + (TILE_SIZE+5)*(TILE_SIZE+5); //The squared length of a tile that's diagonally adjacent to another tile.
 
 //UI default parameters.
 window.RATIO_TRIANGLES = 0.25;
@@ -62,45 +62,65 @@ var IS_PICKING_UP = false;
 var lastMouseX, lastMouseY;
 
 /**
-TODO
+Represents a polygon in the sim world.
 */
 function Draggable(x,y){
 	
 	var self = this;
+	//The draggable's current position.
 	self.x = x;
 	self.y = y;
+	//The draggable's destination position.
 	self.gotoX = x;
 	self.gotoY = y;
 
+	//Used as a sort of anchor point when dragging
+	//the draggable.
 	var offsetX, offsetY;
+	//The point in the grid this draggable was last at.
 	var pickupX, pickupY;
+	/**
+	Called when this draggable has started to be dragged.
+	*/
 	self.pickup = function(){
 
+		//Flag that we've been picked up.
 		IS_PICKING_UP = true;
 
+		//Save off our current position in the grid.
 		pickupX = (Math.floor(self.x/TILE_SIZE)+0.5)*TILE_SIZE;
 		pickupY = (Math.floor(self.y/TILE_SIZE)+0.5)*TILE_SIZE;
+		//Save our relative position to the mouse
+		//so we can follow it through the drag.
 		offsetX = Mouse.x-self.x;
 		offsetY = Mouse.y-self.y;
+		//Flag that we're being dragged.
 		self.dragged = true;
 
-		// Dangle
+		//Do a little dangling effect to indicate we're being dragged.
 		self.dangle = 0;
 		self.dangleVel = 0;
 
-		// Draw on top
+		//Draw on top of other draggables.
 		var index = draggables.indexOf(self);
 		draggables.splice(index,1);
 		draggables.push(self);
 
 	};
 
+	/**
+	Called when this draggable has stopped being dragged.
+	*/
 	self.drop = function(){
 
+		//Mark that we're not being picked up.
 		IS_PICKING_UP = false;
 
+		//Try to place us at the cursor's position in the world.
+		//First figure out what tile the cursor is over.
 		var px = Math.floor(Mouse.x/TILE_SIZE);
 		var py = Math.floor(Mouse.y/TILE_SIZE);
+		//Make sure this tile is actually in bounds.
 		if(px<0) px=0;
 		if(px>=GRID_SIZE) px=GRID_SIZE-1;
 		if(py<0) py=0;
@@ -108,109 +128,156 @@ function Draggable(x,y){
 		var potentialX = (px+0.5)*TILE_SIZE;
 		var potentialY = (py+0.5)*TILE_SIZE;
 
+		//Now see if the cursor's tile is actually empty.
 		var spotTaken = false;
 		for(var i=0;i<draggables.length;i++){
 			var d = draggables[i];
+			//We're still in the global draggable list,
+			//so remember to skip over ourselves.
 			if(d==self) continue;
 			var dx = d.x-potentialX;
 			var dy = d.y-potentialY;
+			//Is this other draggable too close to
+			//the cursor's tile?
 			if(dx*dx+dy*dy<10){
+				//If so, we can't use this spot.
 				spotTaken=true;
 				break;
 			}
 		}
 
+		//Is our destination occupied?
 		if(spotTaken){
+			//If so, return us to our initial position.
 			self.gotoX = pickupX;
 			self.gotoY = pickupY;
 		}else{
-			
+			//Otherwise, tick the stat counter.
 			STATS.steps++;
 			writeStats();
 
+			//Go to our destination.
 			self.gotoX = potentialX;
 			self.gotoY = potentialY;
 		}
 
+		//Mark that we're not being dragged anymore.
 		self.dragged = false;
 
 	}
 
 	var lastPressed = false;
+	/**
+	Updates this draggable's satisfaction.
+	*/
 	self.update = function(){
 
 		// Shakiness?
 		self.shaking = false;
 		self.bored = false;
 
+		//If we're not being dragged,
+		//we're in the world and can update our happiness.
 		if(!self.dragged){
 			var neighbors = 0;
 			var same = 0;
+			//Check all other draggables (!!!)
 			for(var i=0;i<draggables.length;i++){
 				var d = draggables[i];
 				if(d==self) continue;
 				var dx = d.x-self.x;
 				var dy = d.y-self.y;
+				//Is this draggable close enough to us
+				//to count as a neighbor?
 				if(dx*dx+dy*dy<DIAGONAL_SQUARED){
+					//If so, update our neighbor count.
 					neighbors++;
+					//Is it the same type as us?
 					if(d.color==self.color){
+						//If so, update the same count.
 						same++;
 					}
 				}
 			}
+			//Sanity check to avoid a divide by zero.
 			if(neighbors>0){
 				self.sameness = (same/neighbors);
 			}else{
 				self.sameness = 1;
 			}
+			//Are too many/not enough neighbors like us?
 			if(self.sameness<BIAS || self.sameness>NONCONFORM){
+				//If so, freak out.
 				self.shaking = true;
 			}
+			//Are pretty much everybody like us?
 			if(self.sameness>0.99){
+				//If so, kinda just sit there and sigh.
 				self.bored = true;
 			}
+			//Are we totally, utterly isolated?
 			if(neighbors==0){
+				//If so, freak out.
 				self.shaking = false;
 			}
 		}
 
-		// Dragging
+		//Handle dragging.
+		//Are we not *currently* being dragged?
 		if(!self.dragged){
+			//If not, can we be dragged and did the mouse just start a drag?
 			if((self.shaking||window.PICK_UP_ANYONE) && Mouse.pressed && !lastPressed){
 				var dx = Mouse.x-self.x;
 				var dy = Mouse.y-self.y;
+				//If so, did the mouse start the drag over our tile?
 				if(Math.abs(dx)<PEEP_SIZE/2 && Math.abs(dy)<PEEP_SIZE/2){
+					//If so, pick us up.
 					self.pickup();
 				}
 			}
 		}else{
+			//Otherwise, we're currently being dragged;
+			//follow the mouse.
 			self.gotoX = Mouse.x - offsetX;
 			self.gotoY = Mouse.y - offsetY;
+			//Did the mouse just end the drag?
 			if(!Mouse.pressed){
+				//If so, try to drop us where the mouse is.
 				self.drop();
 			}
 		}
+		//Update the button press state for drag checks.
 		lastPressed = Mouse.pressed;
 
-		// Going to where you should
+		// Actually move us if we have a destination.
 		self.x = self.x*0.5 + self.gotoX*0.5;
 		self.y = self.y*0.5 + self.gotoY*0.5;
 
 	};
 
 	self.frame = 0;
+	/**
+	Actually draws this draggable.
+	*/
 	self.draw = function(){
+		//Save the current world transform
+		//so we don't have to rebuild everything.
 		ctx.save();
+		//We're going to draw the sprite at our position, of course.
 		ctx.translate(self.x,self.y);
 		
+		//Are we unhappy?
 		if(self.shaking){
+			//If so, add the shaking effect:
+			//swing back and forth.
 			self.frame+=0.07;
 			ctx.translate(0,20);
 			ctx.rotate(Math.sin(self.frame-(self.x+self.y)/200)*Math.PI*0.05);
 			ctx.translate(0,-20);
 		}
 
-		// Draw thing
+		//Figure out which sprite to use for our draggable
+		//given our type and emotional state.
 		var img;
 		if(self.color=="triangle"){
 			if(self.shaking){
@@ -238,16 +305,20 @@ function Draggable(x,y){
 			}
         }
 
-		// Dangle
+		//Are we being dragged?
 		if(self.dragged){
+			//If so, add in our dangling effect.
+			//It's a kind of swinging motion.
 			self.dangle += (lastMouseX-Mouse.x)/100;
 			ctx.rotate(-self.dangle);
 			self.dangleVel += self.dangle*(-0.02);
 			self.dangle += self.dangleVel;
 			self.dangle *= 0.9;
 		}
-
+		
+		//Draw our draggable given the applied transform.
 		ctx.drawImage(img,-PEEP_SIZE/2,-PEEP_SIZE/2,PEEP_SIZE,PEEP_SIZE);
+		//Restore the world's transform.
 		ctx.restore();
 	};
 
@@ -264,7 +335,7 @@ Entry point for the window.
 Initializes grid and statistics, as well as their canvases.
 */
 window.reset = function(){
-	//TODO
+	//Init our stat structure.
 	STATS = {
 		steps:0,
 		offset:0
@@ -348,35 +419,47 @@ window.render = function(){
 		draggables[i].draw();
 	}
 
-	//TODO
-	// Done stepping?
+	//Is the sim done?
 	if(isDone()){
+		//If so, tick down the wait timer.
 		doneBuffer--;
+		//Are we done waiting?
 		if(doneBuffer==0){
+			//If so, prep the done animation.
 			doneAnimFrame = 30;
+			//Flag that the sim is done.
 			START_SIM = false;
 			console.log("DONE");
+			//Write out our stats.
 			writeStats();
 			parse();
 		}
-	}else if(START_SIM){
-		
+	}
+	//Otherwise, is the sim just started?
+	else if(START_SIM){
+		//Tick our step counter.
 		STATS.steps++;
+		//Set the wait timer.
 		doneBuffer = 30;
 
 		// Write stats
 		writeStats();
 
 	}
+	//Should the background be animating?
 	if(doneAnimFrame>0){
+		//Flash the background white.
 		doneAnimFrame--;
 		var opacity = ((doneAnimFrame%15)/15)*0.2;
 		canvas.style.background = "rgba(255,255,255,"+opacity+")";
-	}else{
+	}
+	else
+	{
+		//Otherwise, keep the background transparent.
 		canvas.style.background = "none";
 	}
 
-	// Mouse
+	//Store mouse position for dragging purposes.
 	lastMouseX = Mouse.x;
 	lastMouseY = Mouse.y;
 
@@ -396,15 +479,15 @@ var tmp_stats = document.createElement("canvas");
 tmp_stats.width = stats_canvas.width;
 tmp_stats.height = stats_canvas.height;
 
-/**
-Callback to write out stats to the segregation graph.
-*/
 // stats global variable updated on each writeStats
 var aceStats;
 var sum_avg_shake = 0;
 var sum_avg_bored = 0;
 var max_segregation = 0;
 
+/**
+Callback to write out stats to the segregation graph.
+*/
 window.writeStats = function(){
 	//Early abort if there's no draggables to check.
 	if(!draggables || draggables.length==0)
@@ -430,6 +513,11 @@ window.writeStats = function(){
         total_shake += (d.shaking?1:0);
         total_bored += (d.bored?1:0);
 	}
+	//Now calculate average population counts by
+	//dividing by the number of types of polygon:
+	//	* Average Sameness
+	//	* Average Unhappiness
+	//	* Average Bored Polygons
 	var avg = total/draggables.length;
 	var avg_shake = total_shake/draggables.length;
 	var avg_bored = total_bored/draggables.length;
@@ -444,8 +532,8 @@ window.writeStats = function(){
 		debugger;
 	}
 
-	//TODO
-	// If stats oversteps, bump back
+	//Scroll the stat graph back a bit if
+	//we've reached the right edge of the graph.
 	if(STATS.steps>320+STATS.offset){
 		STATS.offset += 120;
 		var tctx = tmp_stats.getContext("2d");
@@ -455,9 +543,14 @@ window.writeStats = function(){
 		stats_ctx.drawImage(tmp_stats,-119,0);
 	}
 
+	//Update the segregation stat using the current average
+	//as part of a rolling average.
 	// AVG -> SEGREGATION
 	var segregation = (avg-0.5)*2;
+	//Today is Troll the Commenter Day, apparently.
+	//Just make the segregation the average.
 	var segregation = avg;
+	//Clamp segregation to 0.
 	if(segregation<0) segregation=0;
     
     // Nisarga Patel 11/17/2015
@@ -467,7 +560,9 @@ window.writeStats = function(){
         max_segregation = segregation;
         
     }
-	// Graph it
+	
+	// Draw the stats!
+	//The current segregation value.
 	stats_ctx.fillStyle = "#cc2727";
 	var x = STATS.steps - STATS.offset;
 	var y = 250 - segregation*250+10;
@@ -477,6 +572,7 @@ window.writeStats = function(){
 	segregation_text.style.top = Math.round(y-15)+"px";
 	segregation_text.style.left = Math.round(x+35)+"px";
 
+	//The current average number of shakers.
 	stats_ctx.fillStyle = "#2727cc";
 	y = 250 - avg_shake*250+10;
 	stats_ctx.fillRect(x,y,1,5);
@@ -487,6 +583,7 @@ window.writeStats = function(){
         shaking_text.style.left = Math.round(x+35)+"px";
     }
 
+	//The current average number of bored polygons.
 	stats_ctx.fillStyle = "#cccc27";
 	y = 250 - avg_bored*250+10;
 	stats_ctx.fillRect(x,y,1,5);
@@ -497,7 +594,8 @@ window.writeStats = function(){
 	bored_text.style.left = Math.round(x+35)+"px";
     }
 
-	// Button
+	//Now draw the UI buttons that depend on the sim state.
+	//Right now that's just the start/pause sim button.
 	if(START_SIM){
 		document.getElementById("moving").classList.add("moving");
 	}else{
@@ -538,13 +636,22 @@ function updateStats(){
 }
 var doneAnimFrame = 0;
 var doneBuffer = 30;
+/*
+* Determines if the simulation has been solved; all polygons are happy.
+*/
 function isDone(){
+	//If you pressed the mouse,
+	//world state could be altered, the simulation's not done.
 	if(Mouse.pressed) return false;
+	//Otherwise, check all polygons.
 	for(var i=0;i<draggables.length;i++){
 		var d = draggables[i];
+		//If this polygon is unhappy, the simulation's not done.
 		if(d.shaking) return false;
 	}
     
+	//The simulation's done!
+	//Update stats one last time and return true.
     updateStats();
 
 	return true;
@@ -598,16 +705,22 @@ function step(){
 			}
 
 			var spotTaken = false;
+			//The draggables are moving around throughout all of this;
+			//check that a draggable isn't going to be in this spot.
 			for(var i=0;i<draggables.length;i++){
 				var d = draggables[i];
 				var dx = d.gotoX-spot.x;
 				var dy = d.gotoY-spot.y;
+				//If this draggable is going to be too close,
+				//mark this space as occupied.
 				if(dx*dx+dy*dy<10){
 					spotTaken=true;
 					break;
 				}
 			}
 
+			//If this space won't be occupied,
+			//store it in the empty list.
 			if(!spotTaken){
 				empties.push(spot);
 			}
@@ -615,8 +728,10 @@ function step(){
 		}
 	}
 
-	// Go to a random empty spot
+	// Go to a random empty spot.
 	var spot = empties[Math.floor(Math.random()*empties.length)];
+	//Sanity check;
+	//curl into a ball and cry if there's no empty spots.
 	if(!spot) return;
 	shaker.gotoX = spot.x;
 	shaker.gotoY = spot.y;
@@ -626,17 +741,25 @@ function step(){
 ////////////////////
 // ANIMATION LOOP //
 ////////////////////
+
+//First off, set the callback that will request a frame render every 60th of a second.
+//Some browsers have a default tick function for this;
+//if we don't, set a generic one via setTimeout.
 window.requestAnimFrame = window.requestAnimationFrame ||
 	window.webkitRequestAnimationFrame ||
 	window.mozRequestAnimationFrame ||
 	function(callback){ window.setTimeout(callback, 1000/60); };
+//Now for the actual animation loop.
 (function animloop(){
+	//Schedule another frame render in 1/60 seconds.
 	requestAnimFrame(animloop);
+	//If the window's actually visible, render the world.
 	if(window.IS_IN_SIGHT){
 		render();
 	}
 })();
 
+//Init assuming the window isn't visible yet.
 window.IS_IN_SIGHT = false;
 
 //Now set up the window!
